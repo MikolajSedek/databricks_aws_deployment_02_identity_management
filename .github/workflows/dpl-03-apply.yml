@@ -60,6 +60,8 @@ jobs:
       TF_VAR_databricks_account_id: ${{ secrets.DATABRICKS_ACCOUNT_ID }}
       TF_VAR_service_principal_id: ${{ secrets.DATABRICKS_CLIENT_ID }}
       TF_VAR_service_principal_secret: ${{ secrets.DATABRICKS_CLIENT_SECRET }}
+      TF_VAR_user1_email: ${{ secrets.USER1_EMAIL }}
+      TF_VAR_user2_email: ${{ secrets.USER2_EMAIL }}
       SKIP: 'terraform_docs'
     steps:
       - name: Checkout Code

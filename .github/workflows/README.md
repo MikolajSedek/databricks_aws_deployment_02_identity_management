@@ -132,6 +132,8 @@ To execute the pipelines successfully, the following repository secrets and vari
 | `DATABRICKS_ACCOUNT_ID` | Databricks account ID (UUID), mapped to `TF_VAR_databricks_account_id` | `dpl-02-plan.yml`, `dpl-03-apply.yml` |
 | `DATABRICKS_CLIENT_ID` | OAuth client ID of the account admin service principal, mapped to `TF_VAR_service_principal_id` | `dpl-02-plan.yml`, `dpl-03-apply.yml` |
 | `DATABRICKS_CLIENT_SECRET` | OAuth client secret of that service principal, mapped to `TF_VAR_service_principal_secret` | `dpl-02-plan.yml`, `dpl-03-apply.yml` |
+| `USER1_EMAIL` | Email of the first Databricks account user (`user1`), mapped to `TF_VAR_user1_email` | `dpl-02-plan.yml`, `dpl-03-apply.yml` |
+| `USER2_EMAIL` | Email of the second Databricks account user (`user2`), mapped to `TF_VAR_user2_email` | `dpl-02-plan.yml`, `dpl-03-apply.yml` |
 
 The Databricks service principal must be an account admin. `AWS_REGION` and `AWS_SESSION_TOKEN` are optional.
 
