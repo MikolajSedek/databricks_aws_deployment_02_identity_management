@@ -77,4 +77,4 @@ jobs:
         run: |
           uv run pre-commit run --all-files
         env:
-          SKIP: 'terraform_docs,terraform_trivy'
+          SKIP: 'terraform_docs'
