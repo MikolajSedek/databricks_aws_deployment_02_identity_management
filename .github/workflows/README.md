@@ -11,7 +11,7 @@
 ## 1. Executive Summary
 
 - **Purpose & Scope**:
-  This directory contains the GitHub Actions automation workflows powering continuous integration, automated validation, and continuous delivery for the Databricks account-level identity management (users, groups, service principals, memberships and service principal group management). It implements a reusable, multi-tier pipeline model ensuring that every pull request and push to protected branches is thoroughly validated, planned, and reviewed before changes reach AWS.
+  This directory contains the GitHub Actions automation workflows powering continuous integration, automated validation, and continuous delivery for the Databricks account-level identity management (users, groups, service principals, memberships and service principal group management). It implements a reusable, multi-tier pipeline model ensuring that every push to any branch is thoroughly validated, planned, and reviewed before changes reach AWS.
 - **Problem Statement & Solution**:
   Changing identities and access rules requires strict verification to avoid accidental access loss, privilege escalation, or cross-account deployment drift. This CI/CD architecture splits validation into modular, reusable steps: pre-commit quality and security scanning, isolated Terraform plan generation with plan artifact caching, and environment-gated manual approval before apply execution.
 - **Key Business & Security Outcomes**:
@@ -33,7 +33,7 @@ flowchart TD
     classDef gate fill:#FFF3E0,stroke:#E65100,stroke-width:1.5px,color:#BF360C;
     classDef finish fill:#E8F5E9,stroke:#2E7D32,stroke-width:1.5px,color:#1B5E20;
 
-    Trigger["Push / Pull Request / Dispatch"]:::trigger
+    Trigger["Push (any branch) / Dispatch"]:::trigger
     Stage1["Step 1: dpl-01-precommit.yml (Formatting, TFLint, Trivy, Checkov)"]:::stage
     Stage2["Step 2: dpl-02-plan.yml (Init, Validate, Plan, Artifact Upload)"]:::stage
     Gate["GitHub Environment Approval Gate (dev)"]:::gate
@@ -68,8 +68,8 @@ flowchart TD
 
 | Event | Target Branches | Path Filtering | Automated Apply? |
 |:---|:---:|:---|:---:|
-| `pull_request` | `main`, `dev` | `environments/dev/**`, `modules/**`, config files, workflows | No (Pre-commit and Plan only) |
-| `push` | `dev` | `environments/dev/**`, `modules/**`, config files, workflows | No (Pre-commit and Plan only) |
+| push | any branch (**) | `environments/dev/**`, `modules/**`, config files, workflows | No (Pre-commit and Plan only) |
+| `push` | any branch (`**`) | `environments/dev/**`, `modules/**`, config files, workflows | No (Pre-commit and Plan only) |
 | `push` | `main` | `environments/dev/**`, `modules/**`, config files, workflows | Yes (Gated by Environment Approval) |
 | `workflow_dispatch` | Any branch | None (Manual selection) | Yes (If approved) |
 
@@ -108,7 +108,7 @@ graph TD
 
 | Workflow File | Trigger Type | Primary Role | Key Inputs / Defaults |
 |:---|:---:|:---|:---|
-| [`deploy-dev.yml`](file:///.github/workflows/deploy-dev.yml) | `push`, `pull_request`, `workflow_dispatch` | Root pipeline coordinator for the `dev` environment | `auto_apply: false` |
+| [`deploy-dev.yml`](file:///.github/workflows/deploy-dev.yml) | `push` (any branch), `workflow_dispatch` | Root pipeline coordinator for the `dev` environment | `auto_apply: false` |
 | [`dpl-01-precommit.yml`](file:///.github/workflows/dpl-01-precommit.yml) | `workflow_call` | Runs linting, syntax formatting, and multi-engine security scans | `terraform_version: 1.16.3`, `tflint_version: latest`, `trivy_version: latest` |
 | [`dpl-02-plan.yml`](file:///.github/workflows/dpl-02-plan.yml) | `workflow_call` | Validates configuration, runs `terraform plan`, and uploads plan artifact | `working_directory: environments/dev`, `environment: dev`, `plan_artifact_name: dev-tfplan` |
 | [`dpl-03-apply.yml`](file:///.github/workflows/dpl-03-apply.yml) | `workflow_call` | Downloads plan artifact and executes `terraform apply` under environment gates | `working_directory: environments/dev`, `environment: dev`, `plan_artifact_name: dev-tfplan` |

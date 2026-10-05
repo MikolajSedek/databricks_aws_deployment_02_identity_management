@@ -3,19 +3,7 @@ name: Deploy Dev Environment
 on:
   push:
     branches:
-      - main
-      - dev
-    paths:
-      - 'environments/dev/**'
-      - 'modules/**'
-      - '.pre-commit-config.yaml'
-      - '.tflint.hcl'
-      - '.trivyignore'
-      - '.github/workflows/**'
-  pull_request:
-    branches:
-      - main
-      - dev
+      - '**'
     paths:
       - 'environments/dev/**'
       - 'modules/**'
