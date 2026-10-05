@@ -3,6 +3,7 @@
   Documentation:
     - https://docs.aws.amazon.com/kms/latest/developerguide/overview.html
     - https://docs.aws.amazon.com/kms/latest/developerguide/key-policies.html
+    - https://docs.aws.amazon.com/kms/latest/developerguide/key-policy-default.html
 
   Provisions a customer-managed KMS key (CMK) and key alias for encrypting
   sensitive infrastructure components, such as remote Terraform state buckets
@@ -29,22 +30,13 @@ resource "aws_kms_key_policy" "this" {
     Id      = "key-default-1"
     Statement = [
       {
-        Sid    = "Enable root user permissions"
+        Sid    = "Enable IAM User Permissions"
         Effect = "Allow"
         Principal = {
           AWS = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:root"
         }
         Action   = "kms:*"
         Resource = "*"
-      },
-      {
-        "Sid" : "Enable IAM User Permissions",
-        "Effect" : "Allow",
-        "Principal" : {
-          "AWS" : data.aws_caller_identity.current.arn
-        },
-        "Action" : "kms:*",
-        "Resource" : aws_kms_key.this.arn
       }
     ]
   })

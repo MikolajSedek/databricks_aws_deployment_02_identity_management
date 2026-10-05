@@ -11,7 +11,7 @@
 - **Purpose & Scope**:
   This module deploys a hardened, customer-managed AWS Key Management Service (KMS) key (CMK), key policy, and alias. It establishes an envelope encryption foundation used to protect sensitive infrastructure state, Terraform remote backends, and storage buckets across deployment environments.
 - **Problem Statement & Solution**:
-  Default AWS-managed keys (such as `aws/s3`) lack granular access control delegation, cannot be shared across external IAM roles or accounts with custom conditions, and offer limited auditability. This module solves this by creating a dedicated customer-managed key with automated annual key rotation, root account policy delegation, caller identity permissions, and deletion prevention lifecycles.
+  Default AWS-managed keys (such as `aws/s3`) lack granular access control delegation, cannot be shared across external IAM roles or accounts with custom conditions, and offer limited auditability. This module solves this by creating a dedicated customer-managed key with automated annual key rotation, root account policy delegation (enabling IAM policy-governed KMS access without ephemeral session drift), and deletion prevention lifecycles.
 - **Key Business & Security Outcomes**:
   - **Cryptographic Independence**: Full customer ownership over cryptographic keys and envelope encryption policies.
   - **Accidental Deletion Protection**: Terraform `prevent_destroy` lifecycle guarantees safeguard against accidental key destruction.
@@ -22,11 +22,9 @@
 ## 2. General Logic & Operational Flow
 
 ### 2.1 Configuration & Provisioning Lifecycle
-1. **Caller Identity Discovery**: Reads current account ID and caller ARN using `data.aws_caller_identity.current`.
+1. **Caller Identity Discovery**: Reads current account ID using `data.aws_caller_identity.current`.
 2. **KMS Key Instantiation**: Creates `aws_kms_key.this` with automatic key rotation enabled (`enable_key_rotation = true`) and a 30-day deletion waiting period.
-3. **Key Policy Attachment**: Configures `aws_kms_key_policy.this` granting:
-   - Root account administrative permissions (`kms:*`).
-   - IAM caller identity operational permissions for Terraform provisioning and state management.
+3. **Key Policy Attachment**: Configures `aws_kms_key_policy.this` granting the AWS account principal (`arn:aws:iam::<account_id>:root`) administrative permissions (`kms:*`). This standard AWS KMS default key policy delegates authorization to IAM policies attached to users and assumed roles in the account while avoiding perpetual plan diffs caused by dynamic STS session identifiers.
 4. **Alias Creation**: Creates `aws_kms_alias.this` formatting the key name as `alias/${var.kms_key_alias}-${var.environment}`.
 
 ### 2.2 Operational Use Cases
@@ -42,7 +40,7 @@
 | Resource Type | Resource Identifier | Configuration Attributes | Security Role |
 |:---|:---|:---|:---|
 | `aws_kms_key` | `this` | `enable_key_rotation = true`<br/>`deletion_window_in_days = 30`<br/>`prevent_destroy = true` | Root cryptographic key |
-| `aws_kms_key_policy` | `this` | Root account + Caller ARN policy delegation | Access control boundary |
+| `aws_kms_key_policy` | `this` | Root account IAM policy delegation | Access control boundary |
 | `aws_kms_alias` | `this` | `alias/${kms_key_alias}-${environment}` | Human-readable key reference |
 
 ---
@@ -60,7 +58,7 @@ graph TD
     Inputs["Inputs: kms_key_alias, kms_key_description, environment"]:::input
     CallerData["data.aws_caller_identity.current"]:::res
     KmsKey["aws_kms_key.this (enable_key_rotation: true)"]:::res
-    KmsPolicy["aws_kms_key_policy.this (Root + Caller ARN)"]:::res
+    KmsPolicy["aws_kms_key_policy.this (Root Account Delegation)"]:::res
     KmsAlias["aws_kms_alias.this (alias/...)"]:::res
     OutputArn["Output: kms_arn"]:::out
 
@@ -112,6 +110,7 @@ This module does not invoke any submodules. It provisions native AWS KMS resourc
 ### 7.1 Authoritative Documentation
 - [AWS KMS Developer Guide](https://docs.aws.amazon.com/kms/latest/developerguide/overview.html) - AWS Key Management Service concepts.
 - [AWS KMS Key Policies](https://docs.aws.amazon.com/kms/latest/developerguide/key-policies.html) - Policy architecture and best practices.
+- [Allows access to AWS account and enables IAM policies](https://docs.aws.amazon.com/kms/latest/developerguide/key-policy-default.html) - Default key policy delegation details.
 - [Terraform AWS KMS Key Resource](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/kms_key) - Provider documentation.
 
 ### 7.2 Internal References
