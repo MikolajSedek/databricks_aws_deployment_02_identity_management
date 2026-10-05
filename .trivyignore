@@ -1,0 +1,22 @@
+# ==============================================================================
+# Trivy Security Scanner Ignore List (.trivyignore)
+# Databricks Identity Management & S3 Remote State Backend
+# ==============================================================================
+# This file defines approved exceptions for Trivy security checks in this
+# repository, documenting the code ID, description, affected resources,
+# and architectural justification for each exemption.
+#
+# Currently, all provisioned resources (KMS customer-managed keys with rotation,
+# S3 state bucket with SSE-KMS, versioning, ownership controls, public access
+# block, and Databricks account identities) comply with Trivy security standards.
+#
+# Add new exemption entries below following this format if needed:
+#
+# Rule ID:     <AVD-AWS-XXXX>
+# Description: <Brief description>
+# Severity:    <HIGH | CRITICAL>
+# Target:      <file path and resource name>
+# Justification:
+#   1. <Detailed justification explaining why this check is exempted>
+# <AVD-AWS-XXXX>
+# ==============================================================================
