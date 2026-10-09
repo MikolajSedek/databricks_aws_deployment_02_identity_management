@@ -68,6 +68,10 @@ jobs:
           version: ${{ env.TRIVY_VERSION }}
           token: ${{ secrets.GITHUB_TOKEN }}
 
+      # Pre-download Trivy checks bundle so parallel hook runs don't race on a cold cache
+      - name: Warm up Trivy checks cache
+        run: trivy config --quiet --exit-code 0 .
+
       # Install project dependencies (pre-commit, checkov) via uv
       - name: Install dependencies with uv
         run: uv sync --frozen
