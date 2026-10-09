@@ -1,0 +1,66 @@
+name: Deploy Dev Environment
+
+on:
+  push:
+    branches:
+      - '**'
+    paths:
+      - 'environments/dev/**'
+      - 'modules/**'
+      - '.pre-commit-config.yaml'
+      - '.tflint.hcl'
+      - '.trivyignore'
+      - '.github/workflows/**'
+  workflow_dispatch:
+    inputs:
+      auto_apply:
+        description: 'Auto-apply after plan approval (if GitHub Environment protection rules allow)'
+        required: false
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+  id-token: write
+  pull-requests: write
+
+jobs:
+  # ============================================================================
+  # STEP 1: PRE-COMMIT CHECKS
+  # Runs code formatting, linting (tflint), and security scanning (trivy, checkov, gitleaks).
+  # terraform_docs is skipped.
+  # ============================================================================
+  precommit:
+    name: Pre-commit Quality & Security Checks
+    uses: ./.github/workflows/dpl-01-precommit.yml
+    secrets: inherit
+
+  # ============================================================================
+  # STEP 2: TERRAFORM VALIDATE & PLAN
+  # Validates syntax, generates the execution plan, and caches the plan artifact.
+  # ============================================================================
+  plan:
+    name: Terraform Validate & Plan
+    needs: [ precommit ]
+    uses: ./.github/workflows/dpl-02-plan.yml
+    secrets: inherit
+    with:
+      working_directory: 'environments/dev'
+      environment: 'dev'
+      plan_artifact_name: 'dev-tfplan'
+
+  # ============================================================================
+  # STEP 3: TERRAFORM APPLY
+  # Gated by GitHub Environment manual approval ("dev" environment in GitHub UI).
+  # ============================================================================
+  apply:
+    name: Terraform Apply
+    needs: [ plan ]
+    # Restrict automatic apply to push on default branch or explicit workflow_dispatch
+    if: github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch'
+    uses: ./.github/workflows/dpl-03-apply.yml
+    secrets: inherit
+    with:
+      working_directory: 'environments/dev'
+      environment: 'dev'
+      plan_artifact_name: 'dev-tfplan'
