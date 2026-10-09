@@ -16,4 +16,3 @@ output "application_ids" {
   value       = { for k, sp in databricks_service_principal.this : k => sp.application_id }
   depends_on  = [databricks_service_principal.this]
 }
-

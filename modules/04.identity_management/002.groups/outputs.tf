@@ -17,4 +17,3 @@ output "acl_principal_ids" {
   value       = { for k, g in databricks_group.this : k => g.acl_principal_id }
   depends_on  = [databricks_group_role.account_admin]
 }
-

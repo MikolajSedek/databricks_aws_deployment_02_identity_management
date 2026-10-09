@@ -26,7 +26,7 @@
 1. **Bucket Initialization**: Creates `aws_s3_bucket.this` formatted as `${var.bucket_name}-${var.environment}`.
 2. **Ownership Controls**: Applies `aws_s3_bucket_ownership_controls.this` setting `object_ownership = "BucketOwnerEnforced"` (disabling legacy S3 ACLs).
 3. **Public Access Hardening**: Applies `aws_s3_bucket_public_access_block.this` blocking all public ACLs, policies, and queries.
-4. **Versioning Activation**: Enables multi-version state tracking via `aws_s3_bucket_versioning.this`.
+4. **Versioning Activation**: Enables multi-version state tracking via `aws_s3_bucket_versioning.this`.\
 5. **KMS Encryption Enforcement**: Configures `aws_s3_bucket_server_side_encryption_configuration.this` utilizing the provided `kms_key_arn` and enabling bucket key optimization.
 6. **Lifecycle Management**: Configures `aws_s3_bucket_lifecycle_configuration.this` with rule `cleanup-old-state-versions`, expiring non-current historical versions after 90 days.
 
@@ -56,7 +56,7 @@ Terraform CLI and CI/CD pipelines authenticate with AWS, assume the target deplo
 ```mermaid
 graph TD
     classDef input fill:#ECEFF1,stroke:#37474F,stroke-width:2px,color:#212121;
-    classDef s3 fill:#E8F5E9,stroke:#2E7D32,stroke-width:2px,color:#1B5E20;
+    classDef s3 fill:#E8F5E9,stroke:#2E7D32,stroke-width:1.5px,color:#1B5E20;
     classDef sec fill:#FFF8E1,stroke:#F57F17,stroke-width:1.5px,color:#E65100;
 
     Inputs["Inputs: bucket_name, environment, kms_key_arn"]:::input
@@ -100,11 +100,7 @@ This module does not invoke external submodules. It provisions native Amazon S3 
 
 ### 6.2 Essential Outputs Summary
 
-| Output | Type | Description |
-|:---|:---:|:---|
-| `bucket_id` | `string` | The ID / name of the S3 bucket |
-| `bucket_arn` | `string` | The Amazon Resource Name (ARN) of the S3 bucket |
-| `bucket_domain_name` | `string` | The bucket domain name |
+No outputs are exported by this module. The backend bucket is provisioned and managed directly for internal environment state storage.
 
 ---
 

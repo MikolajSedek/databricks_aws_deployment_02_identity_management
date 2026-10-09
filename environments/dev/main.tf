@@ -75,8 +75,4 @@ module "service_principal_group_management" {
   service_principal_application_ids = module.service_principals.application_ids
   group_acl_principal_ids           = module.groups.acl_principal_ids
   service_principal_group_roles     = local.service_principal_group_roles
-
-  depends_on = [
-    module.group_memberships
-  ]
 }

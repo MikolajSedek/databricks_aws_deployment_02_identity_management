@@ -13,16 +13,16 @@ locals {
   */
   grant_rules = {
     for sp_key, grants in var.service_principal_group_roles : sp_key =>
-      concat(
-        length(grants.managers) > 0 ? [{
-          role       = "roles/servicePrincipal.manager"
-          principals = [for g in grants.managers : lookup(var.group_acl_principal_ids, g, null)]
-        }] : [],
-        length(grants.users) > 0 ? [{
-          role       = "roles/servicePrincipal.user"
-          principals = [for g in grants.users : lookup(var.group_acl_principal_ids, g, null)]
-        }] : []
-      )
+    concat(
+      length(grants.managers) > 0 ? [{
+        role       = "roles/servicePrincipal.manager"
+        principals = [for g in grants.managers : lookup(var.group_acl_principal_ids, g, null)]
+      }] : [],
+      length(grants.users) > 0 ? [{
+        role       = "roles/servicePrincipal.user"
+        principals = [for g in grants.users : lookup(var.group_acl_principal_ids, g, null)]
+      }] : []
+    )
   }
 
   // resource name of the default rule set of each service principal; "" for unknown keys (reported by preconditions)

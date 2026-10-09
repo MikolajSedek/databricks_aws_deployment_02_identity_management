@@ -9,4 +9,3 @@ output "ids" {
   description = "Map of user key => Databricks user ID."
   value       = { for k, u in databricks_user.this : k => u.id }
 }
-
