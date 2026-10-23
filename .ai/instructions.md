@@ -17,6 +17,16 @@ This project deploys AWS infrastructure for **Enterprise Databricks** using a **
 Always ground implementations in official, up-to-date documentation. Do not rely on assumptions or potentially outdated training data when designing AWS architecture or writing Terraform resource definitions.
 
 ### A. Databricks AWS Official Documentation *(Imperative Sources of Truth)*
+- **Databricks AWS Workspace Provisioning Skill (`databricks-aws-workspace`)**:
+  - Use the vendored skill at [`.ai/skills/databricks-aws-workspace/SKILL.md`](./skills/databricks-aws-workspace/SKILL.md) for architecting, provisioning, configuring, and troubleshooting Databricks Workspaces on AWS with Terraform (both Classic Customer-Managed VPC and Serverless compute modes).
+- **Databricks AWS Workspace Provisioning Guide**:
+  - [Databricks AWS Workspace Terraform Guide](https://registry.terraform.io/providers/databricks/databricks/latest/docs/guides/aws-workspace#databricks-workspace) *(Authoritative step-by-step guide for deploying Databricks E2 workspaces with VPC, root bucket, cross-account IAM role, and provider authentication)*
+- **Databricks on AWS Workspace Administration Guide**:
+  - [Databricks on AWS Workspace Administration Guide](https://docs.databricks.com/aws/en/admin/workspace/) *(Authoritative reference for workspace lifecycle, choosing between serverless and classic workspaces, account console configuration, and operational updates)*
+- **Databricks Terraform Provider Official Documentation**:
+  - [Databricks Terraform Registry Docs](https://registry.terraform.io/providers/databricks/databricks/latest/docs) *(Authoritative schema and reference for all Databricks Terraform provider resources, data sources, and authentication attributes)*
+- **Databricks Cloud Automation Best Practices**:
+  - [Automating Databricks Deployments on AWS Best Practices (Part 3)](https://www.databricks.com/blog/best-practices-and-guidance-cloud-engineers-deploy-databricks-aws-part-3) *(Authoritative architectural guidance on 3-tier API endpoints: AWS, Databricks Account, and Databricks Workspace; decoupling modules, and automation guardrails)*
 - **Databricks on AWS Official Documentation**:
   - [Databricks on AWS Documentation](https://docs.databricks.com/aws/en/) *(Imperative source of truth for all Databricks AWS configurations, architecture, security, compute, storage, and networking requirements)*
 - **Databricks Agent Skill (`databricks-docs`)**:
@@ -29,8 +39,6 @@ Always ground implementations in official, up-to-date documentation. Do not rely
   - [Databricks AWS E2 Firewall Hub and Spoke Guide](https://github.com/databricks/terraform-provider-databricks/blob/main/docs/guides/aws-e2-firewall-hub-and-spoke.md)
 - **Databricks Customer-Managed VPC**:
   - [Databricks Customer-Managed VPC Configuration Guide](https://docs.databricks.com/aws/en/administration-guide/cloud-configurations/aws/customer-managed-vpc)
-- **Databricks Terraform Provider Documentation**:
-  - [Databricks Terraform Registry Docs](https://registry.terraform.io/providers/databricks/databricks/latest/docs)
 
 ### B. AWS Official Documentation
 - **AWS Documentation MCP Server (`aws-docs`)**:
@@ -64,9 +72,14 @@ When assisting with infrastructure tasks:
    - Query the **Terraform MCP Server** or official registry documentation to confirm the exact arguments, required blocks, and valid attribute values for `hashicorp/aws` and `databricks/databricks` resources.
 3. **Use Databricks Documentation Skill for Gap Coverage**:
    - If requirements are unclear after checking the referenced architecture docs, use `databricks-docs` skill guidance to fetch `https://docs.databricks.com/llms.txt`, then follow the linked page that matches the exact feature.
-4. **Validate AWS Service Constraints & IAM Policies**:
+4. **Follow Databricks AWS Workspace Provisioning Routing (`databricks-aws-workspace`)**:
+   - When designing, creating, configuring, or modifying Databricks workspaces on AWS, strictly consult and follow the [`.ai/skills/databricks-aws-workspace/SKILL.md`](./skills/databricks-aws-workspace/SKILL.md) skill.
+   - Enforce the 3-tier API lifecycle (AWS Cloud -> Databricks Account MWS -> Databricks Workspace).
+   - Ensure complete decoupling between account-level workspace creation (`provider = databricks.mws`) and workspace-level resource orchestration (`provider = databricks`) across separate modules.
+   - Prevent credential validation race conditions (`MALFORMED_REQUEST: Failed credentials validation checks`) by injecting `time_sleep` dependencies between IAM policy attachment and workspace deployment.
+5. **Validate AWS Service Constraints & IAM Policies**:
    - Query the **AWS Documentation MCP Server (`aws-docs`)** to verify security best practices (e.g., KMS key policies, bucket policies, VPC endpoint routing, IAM cross-account roles).
-5. **Check for Deprecations**:
+6. **Check for Deprecations**:
    - Verify that new resource blocks follow modern AWS provider syntax (e.g., standalone `aws_s3_bucket_*`, `aws_route_table`, `aws_networkfirewall_*` resources).
 
 ---
@@ -304,6 +317,8 @@ When creating any new module, strictly follow this standard file layout:
   - Be explicitly aware that Databricks resources require different provider scopes:
     - **Workspace-Level Provider** (`host = https://<workspace-instance>.cloud.databricks.com/`): Used for clusters, jobs, notebooks, repos, workspace-level permissions, and workspace directory objects.
     - **Account-Level Provider** (`host = "https://accounts.cloud.databricks.com"`, `account_id = var.databricks_account_id`): Required for account-level provisioning including MWS networks (`databricks_mws_networks`), storage configurations (`databricks_mws_storage_configurations`), credentials (`databricks_mws_credentials`), workspaces (`databricks_mws_workspaces`), and account metastore assignments.
+  - **Databricks AWS Workspace Provisioning Routing**:
+    - For all workspace provisioning patterns, refer to the [`.ai/skills/databricks-aws-workspace/SKILL.md`](./skills/databricks-aws-workspace/SKILL.md) skill. Follow the strict separation rule between the workspace creation module (`provider = databricks.mws`) and downstream workspace management modules (`provider = databricks`).
   - **Never guess provider scopes**: Always check the official [Databricks Terraform Provider Documentation](https://registry.terraform.io/providers/databricks/databricks/latest/docs) to determine whether a resource operates at the account or workspace level.
 
 ### E. Pre-Commit Execution, Documentation & Exception Handling

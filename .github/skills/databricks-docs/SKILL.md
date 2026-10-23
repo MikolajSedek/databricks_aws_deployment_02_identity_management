@@ -61,6 +61,7 @@ The llms.txt file is organized by category:
 
 ## Related Skills
 
+- **[databricks-aws-workspace](../databricks-aws-workspace/SKILL.md)** - Patterns for architecting and provisioning Databricks Workspaces on AWS with Terraform
 - **[databricks-python-sdk](../databricks-python-sdk/SKILL.md)** - SDK patterns for programmatic Databricks access
 - **databricks-pipelines** - DLT / Lakeflow pipeline workflows
 - **[databricks-unity-catalog](../databricks-unity-catalog/SKILL.md)** - Governance and catalog management

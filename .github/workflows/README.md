@@ -52,7 +52,7 @@ flowchart TD
    - Initializes HashiCorp Terraform (`1.16.3`), TFLint with custom rules (`../../.tflint.hcl`), and Aqua Security Trivy (`setup-trivy`).
    - Runs pre-commit hooks across all files (formatting, linting, secret detection, security scanning) while skipping documentation generation.
 2. **Step 2: Terraform Validate & Plan ([`dpl-02-plan.yml`](file:///.github/workflows/dpl-02-plan.yml))**:
-   - Configures AWS credentials and generates AWS shared profile files.
+   - Configures AWS credentials, assumes the IAM role, and writes the AWS shared profile via aws-actions/configure-aws-credentials.
    - Caches Terraform provider plugins (`.terraform` directory) keyed by `.terraform.lock.hcl`.
    - Checks code formatting, runs `terraform init`, and executes `terraform validate`.
    - Generates a speculative execution plan (`tfplan`) and human-readable plan summary (`tfplan.txt`).
